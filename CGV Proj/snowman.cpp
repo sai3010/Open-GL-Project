@@ -1,9 +1,10 @@
 #include <math.h>
+#include<stdlib.h>
 #include <GL/glut.h>
 #include <stdio.h>
 #include <string.h>
-//#include <cstdlib>
-//if you got error in exit() by compiler then does not incluede stdlib.h because //exit() is also defined in glut.h file.
+
+#define MAX_PARTICLES 10000
 
 float angle = 0.0, deltaAngle = 0.0, ratio;
 float x = 0.0f, y = 1.75f, z = 5.0f;
@@ -12,11 +13,57 @@ int deltaMove = 0, h, w;
 int font = (int)GLUT_BITMAP_8_BY_13;
 static GLint snowman_display_list;
 int bitmapHeight = 13;
+float slowdown = 2.0;
+float velocity = 0.0;
+float zoom = -40.0;
+float pan = 0.0;
+float tilt = 0.0;
 
-int frame, time, timebase = 0;
+int loop;
+
+typedef struct {
+	// Life
+	bool alive; // is the particle alive?
+	float life; // particle lifespan
+	float fade; // decay
+				// color
+	float red;
+	float green;
+	float blue;
+	// Position/direction
+	float xpos;
+	float ypos;
+	float zpos;
+	// Velocity/Direction, only goes down in y dir
+	float vel;
+	// Gravity
+	float gravity;
+}particles;
+
+// Paticle System
+particles par_sys[MAX_PARTICLES];
+
+
 char s[30];
 
 void initWindow();
+void initParticles(int i) {
+	par_sys[i].alive = true;
+	par_sys[i].life = 1.0;
+	par_sys[i].fade = float(rand() % 50) / 1000.0f + 0.003f;
+
+	par_sys[i].xpos = (float)(rand() % 100) - 50;
+	par_sys[i].ypos = 25;
+	par_sys[i].zpos = (float)(rand() % 100) - 10;
+
+	par_sys[i].red = 0.5;
+	par_sys[i].green = 0.5;
+	par_sys[i].blue = 1.0;
+
+	par_sys[i].vel = velocity;
+	par_sys[i].gravity = -0.8;//-0.8;
+
+}
 
 void changeSize(int w1, int h1)
 {
@@ -48,12 +95,14 @@ void changeSize(int w1, int h1)
 }
 
 
+
+
 void drawSnowMan() {
 
 
 	glColor3f(1.0f, 1.0f, 1.0f);
 
-	// Draw Body 
+	// Draw Body
 	glTranslatef(0.0f, 0.75f, 0.0f);
 	glutSolidSphere(0.75f, 20, 20);
 
@@ -92,8 +141,8 @@ GLuint createDL() {
 	glNewList(snowManDL, GL_COMPILE);
 
 	// call the function that contains the rendering commands
-	for (int i = -3; i < 3; i++)
-		for (int j = -3; j < 3; j++) {
+	for (int i = -5; i < 5; i++)
+		for (int j = -5; j < 5; j++) {
 			glPushMatrix();
 			glTranslatef(i*10.0, 0, j * 10.0);
 			glCallList(snowManDL + 1);
@@ -174,7 +223,40 @@ void renderBitmapString(float x, float y, void *font, char *string)
 	}
 }
 
+void drawSnow() {
+	float x, y, z;
+	for (loop = 0; loop < MAX_PARTICLES; loop = loop + 5) {
+		if (par_sys[loop].alive == true) {
+			x = par_sys[loop].xpos;
+			y = par_sys[loop].ypos;
+			z = par_sys[loop].zpos + zoom;
 
+			// Draw particles
+			glColor3f(1.0, 1.0, 1.0);
+			glPushMatrix();
+			glTranslatef(x, y, z);
+			glutSolidSphere(0.2, 16, 16);
+			glPopMatrix();
+
+			// Update values
+			//Move
+			par_sys[loop].ypos += par_sys[loop].vel / (slowdown * 1000);
+			par_sys[loop].vel += par_sys[loop].gravity;
+			// Decay
+			par_sys[loop].life -= par_sys[loop].fade;
+
+			if (par_sys[loop].ypos <= -10) {
+
+				par_sys[loop].life = -1.0;
+			}
+
+			//Revive
+			if (par_sys[loop].life < 0.0) {
+				initParticles(loop);
+			}
+		}
+	}
+}
 void renderScene(void) {
 
 	if (deltaMove)
@@ -200,21 +282,15 @@ void renderScene(void) {
 
 	glCallList(snowman_display_list);
 
-	frame++;
-	time = glutGet(GLUT_ELAPSED_TIME);
-	if (time - timebase > 1000) {
-		sprintf(s, "FPS:%4.2f", frame*1000.0 / (time - timebase));
-		timebase = time;
-		frame = 0;
-	}
+	drawSnow();
+
 
 	glColor3f(0.0f, 1.0f, 1.0f);
 	setOrthographicProjection();
 	glPushMatrix();
 	glLoadIdentity();
-	renderBitmapString(30, 15, (void *)font, "SnowMan");
-	renderBitmapString(30, 35, (void *)font, s);
-	renderBitmapString(30, 55, (void *)font, "Esc - Quit");
+
+	renderBitmapString(30, 15, (void *)font, "Esc - Quit");
 	glPopMatrix();
 	resetPerspectiveProjection();
 
@@ -247,7 +323,7 @@ void releaseKey(int key, int x, int y) {
 	case GLUT_KEY_RIGHT: if (deltaAngle > 0.0f)
 		deltaAngle = 0.0f;
 		break;
-	case GLUT_KEY_UP: if (deltaMove > 0)
+	case GLUT_KEY_UP:  if (deltaMove > 0)
 		deltaMove = 0;
 		break;
 	case GLUT_KEY_DOWN: if (deltaMove < 0)
@@ -264,6 +340,9 @@ void initWindow() {
 	glutDisplayFunc(renderScene);
 	glutIdleFunc(renderScene);
 	glutReshapeFunc(changeSize);
+	for (loop = 0; loop < MAX_PARTICLES; loop++) {
+		initParticles(loop);
+	}
 	initScene();
 
 }
@@ -274,7 +353,7 @@ int main(int argc, char **argv)
 	glutInitDisplayMode(GLUT_DEPTH | GLUT_DOUBLE | GLUT_RGBA);
 	glutInitWindowPosition(100, 100);
 	glutInitWindowSize(640, 360);
-	glutCreateWindow("snowman");
+	glutCreateWindow("Christmas time");
 
 	// register all callbacks
 	initWindow();
