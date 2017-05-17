@@ -18,7 +18,7 @@ float velocity = 0.0;
 float zoom = -40.0;
 float pan = 0.0;
 float tilt = 0.0;
-int frame, time, timebase = 0;
+
 int loop;
 
 typedef struct {
@@ -258,26 +258,51 @@ void drawSnow() {
 	}
 }
 
-void menu(int id) {
-	if (id == 0)
-	{
-		exit(0);
-	}
-	if (id == 1)
-	{
-		drawSnow();
-	}
-	if (id == 2)
-	{
-		initWindow();
-	}
-	if (id == 3)
-	{
-		
+
+void renderScene(void) {
+
+	if (deltaMove)
+		moveMeFlat(deltaMove);
+	if (deltaAngle) {
+		angle += deltaAngle;
+		orientMe(angle);
 	}
 
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	// Draw ground
+
+	glColor3f(0.9f, 0.9f, 0.9f);
+	glBegin(GL_QUADS);
+	glVertex3f(-100.0f, 0.0f, -100.0f);
+	glVertex3f(-100.0f, 0.0f, 100.0f);
+	glVertex3f(100.0f, 0.0f, 100.0f);
+	glVertex3f(100.0f, 0.0f, -100.0f);
+	glEnd();
+	glCallList(snowman_display_list);
+
+	//drawSnow();
+
+
+	glColor3f(0.0f, 1.0f, 1.0f);
+	setOrthographicProjection();
+	glPushMatrix();
+	glLoadIdentity();
+
+	renderBitmapString(30, 15, (void *)font, "Esc - Quit");
+	glPopMatrix();
+	resetPerspectiveProjection();
+
+	glutSwapBuffers();
 }
-void renderScene(void) {
+
+
+
+
+
+
+
+void renderScene1(void) {
 
 	if (deltaMove)
 		moveMeFlat(deltaMove);
@@ -301,32 +326,19 @@ void renderScene(void) {
 	// Draw 36 Snow Men
 
 	glCallList(snowman_display_list);
-	//menu
-	glutCreateMenu(menu);
-	glutAddMenuEntry("Start Snowfall", 1);
-	glutAddMenuEntry("Stop Snowfall", 2);
-	glutAddMenuEntry("Play Sound", 3);
-	glutAddMenuEntry("Stop Sound", 4);
-	glutAttachMenu(GLUT_RIGHT_BUTTON);
-	//menuend
-	//drawSnow();
-	frame++;
-	time = glutGet(GLUT_ELAPSED_TIME);
-	if (time - timebase > 1000) {
-		sprintf(s, "FPS:%4.2f", frame*1000.0 / (time - timebase));
-		timebase = time;
-		frame = 0;
-	}
+
+	drawSnow();
+
 
 	glColor3f(0.0f, 1.0f, 1.0f);
 	setOrthographicProjection();
 	glPushMatrix();
 	glLoadIdentity();
-	//renderBitmapString(30, 15, (void *)font, "SnowMan");
+
 	renderBitmapString(30, 15, (void *)font, "Esc - Quit");
-	renderBitmapString(30, 35, (void *)font, s);
 	glPopMatrix();
 	resetPerspectiveProjection();
+
 	glutSwapBuffers();
 }
 
@@ -380,6 +392,42 @@ void initWindow() {
 
 }
 
+
+
+
+void initWindow1() {
+	glutIgnoreKeyRepeat(1);
+	glutKeyboardFunc(processNormalKeys);
+	glutSpecialFunc(pressKey);
+	glutSpecialUpFunc(releaseKey);
+	glutDisplayFunc(renderScene1);
+	glutIdleFunc(renderScene1);
+	glutReshapeFunc(changeSize);
+	for (loop = 0; loop < MAX_PARTICLES; loop++) {
+		initParticles(loop);
+	}
+	initScene();
+
+}
+
+
+void menu(int id) {
+	if (id == 0)
+	{
+		exit(0);
+	}
+	if (id == 1)
+	{
+		initWindow1();
+	}
+	if (id == 2)
+	{
+		initWindow();
+	}
+}
+
+
+
 int main(int argc, char **argv)
 {
 	glutInit(&argc, argv);
@@ -387,11 +435,15 @@ int main(int argc, char **argv)
 	glutInitWindowPosition(100, 100);
 	glutInitWindowSize(640, 360);
 	glutCreateWindow("Christmas time");
-	// register all callbacks
-	
-	initWindow();
-	glutMainLoop();
 
+	// register all callbacks
+	initWindow();
+	glutCreateMenu(menu);
+	glutAddMenuEntry("Start Snowfall", 1);
+	glutAddMenuEntry("Stop Snowfall", 2);
+	glutAttachMenu(GLUT_RIGHT_BUTTON);
+
+	glutMainLoop();
 
 	return(0);
 }
