@@ -3,8 +3,9 @@
 #include <GL/glut.h>
 #include <stdio.h>
 #include <string.h>
+#include <conio.h>
 
-#define MAX_PARTICLES 10000
+#define MAX_PARTICLES 1000
 
 float angle = 0.0, deltaAngle = 0.0, ratio;
 float x = 0.0f, y = 1.75f, z = 5.0f;
@@ -18,6 +19,7 @@ float velocity = 0.0;
 float zoom = -40.0;
 float pan = 0.0;
 float tilt = 0.0;
+int frame, time, timebase = 0;
 
 int loop;
 
@@ -43,7 +45,7 @@ typedef struct {
 // Paticle System
 particles par_sys[MAX_PARTICLES];
 
-
+long int par = MAX_PARTICLES;
 char s[30];
 
 void initWindow();
@@ -225,7 +227,7 @@ void renderBitmapString(float x, float y, void *font, char *string)
 
 void drawSnow() {
 	float x, y, z;
-	for (loop = 0; loop < MAX_PARTICLES; loop = loop + 5) {
+	for (loop = 0; loop < par; loop = loop + 5) {
 		if (par_sys[loop].alive == true) {
 			x = par_sys[loop].xpos;
 			y = par_sys[loop].ypos;
@@ -282,14 +284,21 @@ void renderScene(void) {
 	glCallList(snowman_display_list);
 
 	//drawSnow();
-
+	frame++;
+	time = glutGet(GLUT_ELAPSED_TIME);
+	if (time - timebase > 1000) {
+		sprintf(s, "FPS:%4.2f", frame*1000.0 / (time - timebase));
+		timebase = time;
+		frame = 0;
+	}
 
 	glColor3f(0.0f, 1.0f, 1.0f);
 	setOrthographicProjection();
 	glPushMatrix();
 	glLoadIdentity();
-
-	renderBitmapString(30, 15, (void *)font, "Esc - Quit");
+	renderBitmapString(30, 15, (void *)font, "Snow Man");
+	renderBitmapString(30, 55, (void *)font, "Esc - Quit");
+	renderBitmapString(30, 35, (void *)font, s);
 	glPopMatrix();
 	resetPerspectiveProjection();
 
@@ -328,14 +337,22 @@ void renderScene1(void) {
 	glCallList(snowman_display_list);
 
 	drawSnow();
-
+	frame++;
+	time = glutGet(GLUT_ELAPSED_TIME);
+	if (time - timebase > 1000) {
+		sprintf(s, "FPS:%4.2f", frame*1000.0 / (time - timebase));
+		timebase = time;
+		frame = 0;
+	}
 
 	glColor3f(0.0f, 1.0f, 1.0f);
 	setOrthographicProjection();
 	glPushMatrix();
 	glLoadIdentity();
 
-	renderBitmapString(30, 15, (void *)font, "Esc - Quit");
+	renderBitmapString(30, 15, (void *)font, "Snow Man");
+	renderBitmapString(30, 55, (void *)font, "Esc - Quit");
+	renderBitmapString(30, 35, (void *)font, s);
 	glPopMatrix();
 	resetPerspectiveProjection();
 
@@ -403,7 +420,7 @@ void initWindow1() {
 	glutDisplayFunc(renderScene1);
 	glutIdleFunc(renderScene1);
 	glutReshapeFunc(changeSize);
-	for (loop = 0; loop < MAX_PARTICLES; loop++) {
+	for (loop = 0; loop < par; loop++) {
 		initParticles(loop);
 	}
 	initScene();
@@ -418,11 +435,27 @@ void menu(int id) {
 	}
 	if (id == 1)
 	{
+		printf("Snow Fall Started with number of particles = %d\n",MAX_PARTICLES);
 		initWindow1();
 	}
 	if (id == 2)
 	{
+		par = MAX_PARTICLES;
+		printf("Snow Fall Stopped And Particle Value is Reset\n");
 		initWindow();
+	}
+	if (id == 3)
+	{
+		par += 1000;
+		printf("Rate Icreased and Particle Value is = %d\n", par);
+		initWindow1();
+
+	}
+	if (id == 4)
+	{
+		par -= 1000;
+		printf("Rate Decreased and Particle Value is = %d\n", par);
+		initWindow1();
 	}
 }
 
@@ -441,6 +474,8 @@ int main(int argc, char **argv)
 	glutCreateMenu(menu);
 	glutAddMenuEntry("Start Snowfall", 1);
 	glutAddMenuEntry("Stop Snowfall", 2);
+	glutAddMenuEntry("Increase Rate Of Snow Fall ", 3);
+	glutAddMenuEntry("Decrease Rate Of Snow Fall ", 4);
 	glutAttachMenu(GLUT_RIGHT_BUTTON);
 
 	glutMainLoop();
