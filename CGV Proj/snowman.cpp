@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <conio.h>
+#include<Windows.h>
 
 #define MAX_PARTICLES 1000
 
@@ -22,6 +23,7 @@ float tilt = 0.0;
 int frame, time, timebase = 0;
 
 int loop;
+
 
 typedef struct {
 	// Life
@@ -394,6 +396,7 @@ void releaseKey(int key, int x, int y) {
 	}
 }
 
+
 void initWindow() {
 	glutIgnoreKeyRepeat(1);
 	glutKeyboardFunc(processNormalKeys);
@@ -458,9 +461,44 @@ void menu(int id) {
 		initWindow1();
 	}
 }
+void title()												// to draw the starting screen
+{
+	printf("hey");
+	renderBitmapString(30, 15, (void *)font, "Computer Graphics Project : SnowMan Simulation Using OpenGL");
+	renderBitmapString(30, 35, (void *)font, "Submitted by");
+	renderBitmapString(30, 55, (void *)font, "R SAIPRASANTH USN : 1RN14CS075");
+	renderBitmapString(30, 75, (void *)font, "S MEGHA USN:1RN14CS085");
+	renderBitmapString(30, 95, (void *)font, "SPOORTHI S USN:1RN14CS105");
+	renderBitmapString(30, 115, (void *)font, "RNS Institute Of Techinology");
+	glFlush();
+}
+
+void delay()
+{
+
+	int k = 15000;
+	while (k != 0)
+	{
+		k--;
+		int i = 15000;
+		while (i != 0)
+		{
+			i--;
+
+		}
+	}
 
 
-
+}
+void display()
+{
+	gluOrtho2D(-100, 200, -100, 200);
+	glClearColor(1, 0, 1, 1);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glColor3f(0, 1, 1);
+	title();
+	delay();
+}
 int main(int argc, char **argv)
 {
 	glutInit(&argc, argv);
@@ -468,9 +506,9 @@ int main(int argc, char **argv)
 	glutInitWindowPosition(100, 100);
 	glutInitWindowSize(640, 360);
 	glutCreateWindow("Christmas time");
-
+	glutDisplayFunc(display);
 	// register all callbacks
-	initWindow();
+	//initWindow();
 	glutCreateMenu(menu);
 	glutAddMenuEntry("Start Snowfall", 1);
 	glutAddMenuEntry("Stop Snowfall", 2);
