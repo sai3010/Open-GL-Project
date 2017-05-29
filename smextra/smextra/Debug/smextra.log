@@ -1,0 +1,9 @@
+﻿  sme.cpp
+c:\users\megha\documents\visual studio 2017\projects\smextra\smextra\sme.cpp(292): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+  c:\program files (x86)\windows kits\10\include\10.0.14393.0\ucrt\stdio.h(1769): note: see declaration of 'sprintf'
+c:\users\megha\documents\visual studio 2017\projects\smextra\smextra\sme.cpp(345): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+  c:\program files (x86)\windows kits\10\include\10.0.14393.0\ucrt\stdio.h(1769): note: see declaration of 'sprintf'
+c:\users\megha\documents\visual studio 2017\projects\smextra\smextra\sme.cpp(442): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+  c:\program files (x86)\windows kits\10\include\10.0.14393.0\ucrt\stdio.h(1769): note: see declaration of 'sprintf'
+  smextra.vcxproj -> C:\Users\megha\documents\visual studio 2017\Projects\smextra\Debug\smextra.exe
+  smextra.vcxproj -> C:\Users\megha\documents\visual studio 2017\Projects\smextra\Debug\smextra.pdb (Partial PDB)
